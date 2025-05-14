@@ -1,0 +1,115 @@
+---
+title: "SOX2 Copy Number Variation and TP53 Mutation: Fisher’s Exact Test Analysis"
+author: "Siber Gunes Celik"
+output: html_document
+---
+
+## Abstract
+
+This project investigates the association between SOX2 copy number variation and TP53 mutation status across various cancer types using Fisher’s Exact Test. Data was obtained from [cBioPortal](https://www.cbioportal.org), and results are visualized and interpreted using R and relevant packages.
+
+## Data Source
+
+Data was downloaded from [cBioPortal](https://www.cbioportal.org), including patient IDs, SOX2 copy number variation, and TP53 mutation status.
+
+## Data Preparation
+
+The columns were cleaned and renamed for easier manipulation, and a contingency table was created to summarize the co-occurrence of the mutations.
+
+``` {r, message=FALSE, warning=FALSE}
+library(ggstatsplot)
+library(RColorBrewer)
+```
+
+``` {r}
+# Load and prepare data
+my_data <- read.delim('pancancer_combined.txt')
+colnames(my_data) <- c('ID', 'TP53_status', 'SOX2_status')
+head(my_data)
+```
+
+## Statistical Test
+
+We used Fisher’s Exact Test to assess the association between SOX2 copy number gain and TP53 mutation status. Visualizations include mosaic plots and bar charts.
+
+``` {r}
+# Define the attributes of interest 
+atr1 <- "Missense"
+atr2 <- "Gain"
+
+# Subsetting data to generate contingency table
+Gene1atr1 <- subset(my_data, subset= TP53_status == atr1)
+Gene2atr2 <- subset(my_data, subset = SOX2_status == atr2)
+
+Cont1 <- subset(Gene1atr1, subset = SOX2_status == atr2)
+Cont2 <- subset(Gene1atr1, subset = SOX2_status != atr2)
+Cont3 <- subset(Gene2atr2, subset = TP53_status != atr1)
+Cont4 <- subset(my_data, subset = TP53_status != atr1)
+Cont4 <- subset(Cont4, subset = SOX2_status != atr2)
+
+# Create contingency table
+dat_table_2 <- data.frame(
+  "atr1_present" = c(length(Cont1$ID), length(Cont3$ID)),
+  "atr1_absence" = c(length(Cont2$ID), length(Cont4$ID)),
+  row.names = c("atr2_present", "atr2_absence"),
+  stringsAsFactors = FALSE
+)
+colnames(dat_table_2) <- c("atr1_present", "atr1_absence")
+dat_table_2
+
+# Contingency Table Visualization
+mosaicplot(dat_table_2,
+           main = "Mosaic plot of Contingency Table",
+           color = c('#FFE4E1', '#BC8F8F'),
+           border = TRUE
+)
+
+# Fisher`s Exact Test
+
+test_2 <- fisher.test(dat_table_2)
+test_2
+
+```
+
+## Results
+
+Fisher's Exact Test yielded a p-value < 0.001 and an odds ratio of 2.47, suggesting a statistically significant association between SOX2 gain and TP53 mutation in the dataset.
+
+
+``` {r}
+# Create a transposed data frame for ggbarstats plot
+x_2 <- c()
+for (row in rownames(dat_table_2)) {
+  for (col in colnames(dat_table_2)) {
+    x_2 <- rbind(x_2, matrix(rep(c(row, col), dat_table_2[row, col]), ncol = 2, byrow = TRUE))
+  }
+}
+df_2 <- as.data.frame(x_2)
+colnames(df_2) <- c("gene1_atr1", "gene2_atr2")
+head(df_2)
+
+# Plotting results with ggbarstats
+test_2 <- fisher.test(table(df_2))
+ggbarstats(
+  df_2, gene1_atr1, gene2_atr2,
+  results.subtitle = FALSE,
+  package = "RColorBrewer",
+  palette = "Paired",
+  subtitle = paste0(
+    "Fisher's exact test", ", p-value = ",
+    ifelse(test_2$p.value < 0.001, "< 0.001", round(test_2$p.value, 3))
+  )
+)
+
+```
+
+
+## References
+
+1: Oliveira, Natalia L., et al. “A discussion on significance indices for contingency tables under small sample sizes.” PLoS One 13.8 (2018): e0199102.
+
+2: Kim, Hae-Young. “Statistical notes for clinical researchers: Chi-squared test and Fisher’s exact test.” Restorative Dentistry & Endodontics 42.2 (2017): 152-155.
+
+
+
+
