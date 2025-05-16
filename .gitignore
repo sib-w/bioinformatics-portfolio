@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# R and RStudio
+.Rhistory
+.RData
+.Rproj.user/
+.Rproj
+*.Rproj
+.Ruserdata
+
+# Markdown and HTML outputs
+*.html
+*.nb.html
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
