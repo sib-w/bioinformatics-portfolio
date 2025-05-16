@@ -1,20 +1,32 @@
-# macOS
+# macOS system files
 .DS_Store
 
 # R and RStudio
 .Rhistory
 .RData
 .Rproj.user/
-.Rproj
-*.Rproj
 .Ruserdata
+*.Rproj
 
-# Markdown and HTML outputs
+# R Markdown and related outputs
 *.html
 *.nb.html
+*.utf8.md
+*.knit.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.ipynb_checkpoints
+
+# Virtual environments
+env/
+venv/
+.venv/
 
 # Logs
 *.log
 
-# Temporary files
+# Temporary/backup files
 *.tmp
+*~
